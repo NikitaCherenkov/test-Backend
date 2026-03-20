@@ -1,5 +1,6 @@
 package com.example.demo.dto.response;
 
+import com.example.demo.enums.CustomerType;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,9 +30,7 @@ public class CustomerResponse {
 
     private String codeMainCustomer;
 
-    private boolean isOrganization;
-
-    private boolean isPerson;
+    private CustomerType customerType;
 
     public static CustomerResponse fromRecord(CustomerRecord record) {
         if (record == null) return null;
@@ -45,8 +44,18 @@ public class CustomerResponse {
                 .postalAddress(record.getCustomerPostalAddress())
                 .email(record.getCustomerEmail())
                 .codeMainCustomer(record.getCustomerCodeMain())
-                .isOrganization(record.getIsOrganization())
-                .isPerson(record.getIsPerson())
+                .customerType(getCustomerType(record))
                 .build();
+    }
+
+    private static CustomerType getCustomerType(CustomerRecord record) {
+        if (record.getIsOrganization()) {
+            return CustomerType.ORGANIZATION;
+        }
+        if (record.getIsPerson()) {
+            return CustomerType.PERSON;
+        }
+
+        return null;
     }
 }
