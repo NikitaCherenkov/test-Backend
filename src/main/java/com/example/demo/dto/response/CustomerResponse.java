@@ -37,6 +37,7 @@ public class CustomerResponse {
 
         return CustomerResponse.builder()
                 .id(record.getId())
+                .name(record.getCustomerName())
                 .code(record.getCustomerCode())
                 .inn(record.getCustomerInn())
                 .kpp(record.getCustomerKpp())

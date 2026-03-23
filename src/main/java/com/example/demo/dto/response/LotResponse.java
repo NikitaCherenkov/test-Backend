@@ -29,7 +29,7 @@ public class LotResponse {
 
     private String placeDelivery;
 
-    private LocalDate deliveryDate;
+    private LocalDate dateDelivery;
 
     public static LotResponse fromRecord(LotRecord record) {
         if (record == null) return null;
@@ -42,7 +42,7 @@ public class LotResponse {
                 .currencyCode(record.getCurrencyCode())
                 .ndsRate(record.getNdsRate())
                 .placeDelivery(record.getPlaceDelivery())
-                .deliveryDate(record.getDateDelivery().toLocalDate())
+                .dateDelivery(record.getDateDelivery().toLocalDate())
                 .build();
     }
 }

@@ -34,9 +34,9 @@ public class CustomerRequest {
     @Pattern(regexp = "^\\d{9}$", message = "KPP must be 9 digits")
     private String kpp;
 
-    private String legalAdress;
+    private String legalAddress;
 
-    private String postalAdress;
+    private String postalAddress;
 
     @Email(message = "Invalid email")
     private String email;

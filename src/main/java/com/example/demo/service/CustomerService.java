@@ -4,6 +4,7 @@ import com.example.demo.dto.request.CustomerRequest;
 import com.example.demo.dto.response.CustomerResponse;
 import com.example.demo.enums.CustomerType;
 import com.example.demo.exceptions.CustomerCodeAlreadyExistException;
+import com.example.demo.exceptions.CustomerHasChildrenException;
 import com.example.demo.exceptions.CustomerHasLotsException;
 import com.example.demo.exceptions.CustomerNotFoundException;
 import com.example.demo.repositiory.CustomerRepository;
@@ -46,9 +47,15 @@ public class CustomerService {
     public void deleteCustomer(int id) {
         CustomerRecord record = getCustomerRecord(id);
 
-        if (lotRepository.existsByCustomerCode(record.getCustomerCode())) {
+        String customerCode = record.getCustomerCode();
+        if (lotRepository.existsByCustomerCode(customerCode)) {
             throw new CustomerHasLotsException(
-                    "Cannot delete customer with id " + id + " because they have associated lots"
+                    "Cannot delete customer with code " + customerCode + " because they have associated lots"
+            );
+        }
+        if (customerRepository.existsByCodeMain(customerCode)) {
+            throw new CustomerHasChildrenException(
+                    "Cannot delete customer with code " + customerCode + " because they have child customer(s)"
             );
         }
 
@@ -58,9 +65,15 @@ public class CustomerService {
     public CustomerResponse updateCustomer(int id, CustomerRequest request) {
         CustomerRecord existingRecord = getCustomerRecord(id);
 
-        if (!existingRecord.getCustomerCode().equals(request.getCode()) &&
-                customerRepository.existsByCode(request.getCode())) {
-            throw new IllegalArgumentException("Customer with code " + request.getCode() + " already exists");
+        String oldCustomerCode = existingRecord.getCustomerCode();
+        String newCustomerCode = request.getCode();
+        if (!oldCustomerCode.equals(newCustomerCode)) {
+            if (customerRepository.existsByCode(request.getCode())) {
+                throw new CustomerCodeAlreadyExistException("Customer with code " + newCustomerCode + " already exists");
+            }
+
+            lotRepository.updateCustomerCode(oldCustomerCode, newCustomerCode);
+            customerRepository.updateMainCustomerCode(oldCustomerCode, newCustomerCode);
         }
 
         checkMainCustomerCode(request);
@@ -77,8 +90,8 @@ public class CustomerService {
         targetRecord.setCustomerName(sourceRequest.getName());
         targetRecord.setCustomerInn(sourceRequest.getInn());
         targetRecord.setCustomerKpp(sourceRequest.getKpp());
-        targetRecord.setCustomerLegalAddress(sourceRequest.getLegalAdress());
-        targetRecord.setCustomerPostalAddress(sourceRequest.getPostalAdress());
+        targetRecord.setCustomerLegalAddress(sourceRequest.getLegalAddress());
+        targetRecord.setCustomerPostalAddress(sourceRequest.getPostalAddress());
         targetRecord.setCustomerEmail(sourceRequest.getEmail());
         targetRecord.setCustomerCodeMain(sourceRequest.getCodeMainCustomer());
 

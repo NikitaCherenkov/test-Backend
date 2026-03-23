@@ -28,10 +28,10 @@ public class LotRequest {
     private BigDecimal price;
 
     @NotNull(message = "Currency is required")
-    private Currency currency;
+    private Currency currencyCode;
 
     @NotNull(message = "NDS is required")
-    private Nds nds;
+    private Nds ndsRate;
 
     @NotNull(message = "Delivery place is required")
     private String placeDelivery;

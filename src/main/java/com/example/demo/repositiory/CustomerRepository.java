@@ -38,10 +38,25 @@ public class CustomerRepository {
         );
     }
 
+    public Optional<CustomerRecord> findByCode(String code) {
+        return Optional.ofNullable(
+                dsl.selectFrom(CUSTOMER)
+                        .where(CUSTOMER.CUSTOMER_CODE.eq(code))
+                        .fetchOne()
+        );
+    }
+
     public boolean existsByCode(String code) {
         return dsl.fetchExists(
                 dsl.selectFrom(CUSTOMER)
                         .where(CUSTOMER.CUSTOMER_CODE.eq(code))
+        );
+    }
+
+    public boolean existsByCodeMain(String code) {
+        return dsl.fetchExists(
+                dsl.selectFrom(CUSTOMER)
+                        .where(CUSTOMER.CUSTOMER_CODE_MAIN.eq(code))
         );
     }
 
@@ -55,6 +70,13 @@ public class CustomerRepository {
     public int deleteById(int id) {
         return dsl.deleteFrom(CUSTOMER)
                 .where(CUSTOMER.ID.eq(id))
+                .execute();
+    }
+
+    public int updateMainCustomerCode(String oldCustomerCode, String newCustomerCode) {
+        return dsl.update(CUSTOMER)
+                .set(CUSTOMER.CUSTOMER_CODE_MAIN, newCustomerCode)
+                .where(CUSTOMER.CUSTOMER_CODE_MAIN.eq(oldCustomerCode))
                 .execute();
     }
 }

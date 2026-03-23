@@ -58,4 +58,11 @@ public class LotRepository {
                 .where(LOT.ID.eq(id))
                 .execute();
     }
+
+    public int updateCustomerCode(String oldCustomerCode, String newCustomerCode) {
+        return dsl.update(LOT)
+                .set(LOT.CUSTOMER_CODE, newCustomerCode)
+                .where(LOT.CUSTOMER_CODE.eq(oldCustomerCode))
+                .execute();
+    }
 }

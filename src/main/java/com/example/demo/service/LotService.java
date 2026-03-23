@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.dto.request.LotRequest;
 import com.example.demo.dto.response.LotResponse;
 import com.example.demo.exceptions.CustomerNotFoundException;
+import com.example.demo.exceptions.LotNotFoundException;
 import com.example.demo.repositiory.CustomerRepository;
 import com.example.demo.repositiory.LotRepository;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,22 @@ public class LotService {
                 .collect(Collectors.toList());
     }
 
+    public LotResponse getLotById(int id) {
+        return LotResponse.fromRecord(getLotRecord(id));
+    }
+
+    public LotResponse createLot(LotRequest request) {
+        if (request.getCustomerCode() == null) {
+            throw new CustomerNotFoundException("Customer code is required");
+        }
+
+        String customerCode = request.getCustomerCode();
+        CustomerRecord customerRecord = customerRepository.findByCode(customerCode)
+                .orElseThrow(() -> new CustomerNotFoundException("Customer not found with code: " + customerCode));
+
+        return createLot(customerRecord.getId(), request);
+    }
+
     public LotResponse createLot(int customerId, LotRequest request) {
         if (request.getCustomerCode() == null) request.setCustomerCode(getCustomerRecord(customerId).getCustomerCode());
 
@@ -67,15 +84,15 @@ public class LotService {
 
     private LotRecord getLotRecord(int lotId) {
         return lotRepository.findById(lotId)
-                .orElseThrow(() -> new CustomerNotFoundException("Lot not found with id: " + lotId));
+                .orElseThrow(() -> new LotNotFoundException("Lot not found with id: " + lotId));
     }
 
     private LotRecord setValues(LotRecord targetRecord, LotRequest sourceRequest) {
         targetRecord.setLotName(sourceRequest.getName());
         targetRecord.setCustomerCode(sourceRequest.getCustomerCode());
         targetRecord.setPrice(sourceRequest.getPrice());
-        targetRecord.setCurrencyCode(sourceRequest.getCurrency().getDisplayName());
-        targetRecord.setNdsRate(sourceRequest.getNds().getDisplayName());
+        targetRecord.setCurrencyCode(sourceRequest.getCurrencyCode().getDisplayName());
+        targetRecord.setNdsRate(sourceRequest.getNdsRate().getDisplayName());
         targetRecord.setPlaceDelivery(sourceRequest.getPlaceDelivery());
         targetRecord.setDateDelivery(sourceRequest.getDateDelivery().atStartOfDay());
 

@@ -19,6 +19,20 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(CustomerCodeAlreadyExistException.class)
+    public ResponseEntity<Map<String, Object>> handleCustomerCodeAlreadyExists(
+            CustomerCodeAlreadyExistException ex) {
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.CONFLICT.value());
+        response.put("error", "Conflict");
+        response.put("message", ex.getMessage());
+        response.put("field", "code");
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
     @ExceptionHandler(CustomerNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleCustomerNotFound(CustomerNotFoundException ex) {
         return ResponseEntity
@@ -34,7 +48,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CustomerHasLotsException.class)
     public ResponseEntity<Map<String, Object>> handleCustomerHasLots(CustomerHasLotsException ex) {
         return ResponseEntity
-                .status(HttpStatus.CONFLICT)  // 409 Conflict
+                .status(HttpStatus.CONFLICT)
+                .body(Map.of(
+                        "timestamp", LocalDateTime.now(),
+                        "status", 409,
+                        "error", "Conflict",
+                        "message", ex.getMessage()
+                ));
+    }
+
+    @ExceptionHandler(CustomerHasChildrenException.class)
+    public ResponseEntity<Map<String, Object>> handleCustomerHasLots(CustomerHasChildrenException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
                 .body(Map.of(
                         "timestamp", LocalDateTime.now(),
                         "status", 409,
@@ -89,8 +115,7 @@ public class GlobalExceptionHandler {
                 message = String.format("Invalid value '%s' for field '%s'", value, fieldName);
                 errors.put(fieldName,
                         String.format("Allowed values: [%s]", allowedValues));
-            }
-            else if (targetType != null &&
+            } else if (targetType != null &&
                     (targetType.equals(LocalDateTime.class) ||
                             targetType.equals(java.time.LocalDate.class) ||
                             targetType.equals(java.time.LocalTime.class))) {
