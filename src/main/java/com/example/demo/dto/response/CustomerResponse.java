@@ -12,6 +12,7 @@ import nu.studer.sample.tables.records.CustomerRecord;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CustomerResponse {
+
     private int id;
 
     private String code;

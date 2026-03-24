@@ -33,7 +33,7 @@ public class LotRequest {
     @NotNull(message = "NDS is required")
     private Nds ndsRate;
 
-    @NotNull(message = "Delivery place is required")
+    @NotBlank(message = "Delivery place is required")
     private String placeDelivery;
 
     @NotNull(message = "Date is required")

@@ -1,7 +1,6 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.request.LotRequest;
-import com.example.demo.dto.response.CustomerResponse;
 import com.example.demo.dto.response.LotResponse;
 import com.example.demo.service.LotService;
 import jakarta.validation.Valid;

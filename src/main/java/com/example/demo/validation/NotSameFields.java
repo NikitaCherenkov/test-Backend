@@ -9,6 +9,7 @@ import java.lang.annotation.*;
 @Constraint(validatedBy = NotSameFieldsValidator.class)
 @Documented
 public @interface NotSameFields {
+
     String message() default "Field values must be different";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};

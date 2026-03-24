@@ -1,5 +1,6 @@
 package com.example.demo.exceptions;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -35,6 +36,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CustomerNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleCustomerNotFound(CustomerNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(Map.of(
+                        "timestamp", LocalDateTime.now(),
+                        "status", 404,
+                        "error", "Not Found",
+                        "message", ex.getMessage()
+                ));
+    }
+
+    @ExceptionHandler(LotNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleLotNotFound(LotNotFoundException ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(Map.of(
@@ -97,14 +110,13 @@ public class GlobalExceptionHandler {
         Map<String, String> errors = new HashMap<>();
 
         Throwable cause = ex.getCause();
-        if (cause instanceof InvalidFormatException) {
-            InvalidFormatException ife = (InvalidFormatException) cause;
+        if (cause instanceof InvalidFormatException ife) {
             Object value = ife.getValue();
             Class<?> targetType = ife.getTargetType();
 
             String fieldName = ife.getPath().stream()
                     .reduce((first, second) -> second)
-                    .map(ref -> ref.getFieldName())
+                    .map(JsonMappingException.Reference::getFieldName)
                     .orElse("unknown");
 
             if (targetType != null && targetType.isEnum()) {
