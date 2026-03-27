@@ -24,29 +24,29 @@ public class LotController {
         return lotService.getAllLots();
     }
 
-    @GetMapping("/{id}")
-    public LotResponse getLot(@PathVariable int id) {
-        return lotService.getLotById(id);
+    @GetMapping("/{lotID}")
+    public LotResponse getLot(@PathVariable Integer lotID) {
+        return lotService.getLotByID(lotID);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public LotResponse createLot(@Valid @RequestBody LotRequest request) {
-        return lotService.createLot(request);
+        return lotService.create(request);
     }
 
-    @PutMapping("/{lotId}")
+    @PutMapping("/{lotID}")
     public ResponseEntity<LotResponse> updateLot(
-            @PathVariable int lotId,
+            @PathVariable Integer lotID,
             @Valid @RequestBody LotRequest request) {
 
-        LotResponse response = lotService.updateLot(lotId, request);
+        LotResponse response = lotService.update(lotID, request);
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{lotId}")
-    public ResponseEntity<Void> deleteLot(@PathVariable int lotId) {
-        lotService.deleteLot(lotId);
+    @DeleteMapping("/{lotID}")
+    public ResponseEntity<Void> deleteLot(@PathVariable Integer lotID) {
+        lotService.delete(lotID);
         return ResponseEntity.noContent().build();
     }
 }

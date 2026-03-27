@@ -1,5 +1,7 @@
 package com.example.demo.repositiory;
 
+import com.example.demo.mapper.CustomerMapper;
+import com.example.demo.model.Customer;
 import lombok.RequiredArgsConstructor;
 import nu.studer.sample.tables.records.CustomerRecord;
 import org.jooq.DSLContext;
@@ -14,6 +16,7 @@ import static nu.studer.sample.Tables.CUSTOMER;
 @RequiredArgsConstructor
 public class CustomerRepository {
 
+    private final CustomerMapper customerMapper;
     private final DSLContext dsl;
 
     public List<CustomerRecord> getAllCustomers() {
@@ -21,19 +24,27 @@ public class CustomerRepository {
                 .fetch();
     }
 
-    public CustomerRecord createNewRecord() {
-        return dsl.newRecord(CUSTOMER);
+    public Customer create(Customer customer) {
+        CustomerRecord newRecord = dsl.newRecord(CUSTOMER);
+        customerMapper.toRecord(customer, newRecord);
+        newRecord.store();
+        return customerMapper.fromRecord(newRecord);
     }
 
-    public CustomerRecord save(CustomerRecord record) {
-        record.store();
-        return record;
+    public Customer update(CustomerRecord record, Customer customer) {
+        customerMapper.toRecord(customer, record);
+        record.update();
+        return customerMapper.fromRecord(record);
     }
 
-    public Optional<CustomerRecord> findById(int id) {
+    public int delete(CustomerRecord record) {
+        return record.delete();
+    }
+
+    public Optional<CustomerRecord> findByID(Integer customerID) {
         return Optional.ofNullable(
                 dsl.selectFrom(CUSTOMER)
-                        .where(CUSTOMER.ID.eq(id))
+                        .where(CUSTOMER.ID.eq(customerID))
                         .fetchOne()
         );
     }
@@ -60,17 +71,11 @@ public class CustomerRepository {
         );
     }
 
-    public boolean existsById(int id) {
+    public boolean existsById(Integer customerID) {
         return dsl.fetchExists(
                 dsl.selectFrom(CUSTOMER)
-                        .where(CUSTOMER.ID.eq(id))
+                        .where(CUSTOMER.ID.eq(customerID))
         );
-    }
-
-    public int deleteById(int id) {
-        return dsl.deleteFrom(CUSTOMER)
-                .where(CUSTOMER.ID.eq(id))
-                .execute();
     }
 
     public int updateMainCustomerCode(String oldCustomerCode, String newCustomerCode) {

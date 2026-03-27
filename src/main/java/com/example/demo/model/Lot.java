@@ -1,32 +1,25 @@
-package com.example.demo.dto.response;
+package com.example.demo.model;
 
-import lombok.Builder;
-import lombok.Data;
+import com.example.demo.enums.Currency;
+import com.example.demo.enums.Nds;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Data
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class LotResponse {
+public class Lot {
 
-    private int id;
-
+    private Integer id;
     private String lotName;
-
     private String customerCode;
-
     private BigDecimal price;
-
-    private String currencyCode;
-
-    private String ndsRate;
-
+    private Currency currencyCode;
+    private Nds ndsRate;
     private String placeDelivery;
-
     private LocalDate dateDelivery;
 }

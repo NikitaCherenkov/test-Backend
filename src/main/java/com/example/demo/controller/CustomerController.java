@@ -27,9 +27,9 @@ public class CustomerController {
         return customerService.getAllCustomers();
     }
 
-    @GetMapping("/{id}")
-    public CustomerResponse getCustomer(@PathVariable int id) {
-        return customerService.getCustomerById(id);
+    @GetMapping("/{customerID}")
+    public CustomerResponse getCustomer(@PathVariable Integer customerID) {
+        return customerService.getCustomerById(customerID);
     }
 
     @PostMapping
@@ -38,46 +38,46 @@ public class CustomerController {
         return customerService.createCustomer(request);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{customerID}")
     public ResponseEntity<CustomerResponse> updateCustomer(
-            @PathVariable int id,
+            @PathVariable Integer customerID,
             @Valid @RequestBody CustomerRequest request) {
 
-        CustomerResponse response = customerService.updateCustomer(id, request);
+        CustomerResponse response = customerService.updateCustomer(customerID, request);
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCustomer(@PathVariable int id) {
-        customerService.deleteCustomer(id);
+    @DeleteMapping("/{customerID}")
+    public ResponseEntity<Void> deleteCustomer(@PathVariable Integer customerID) {
+        customerService.deleteCustomer(customerID);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{id}/lots")
-    public List<LotResponse> getCustomerLots(@PathVariable int id) {
-        return lotService.getCustomerLots(id);
+    @GetMapping("/{customerID}/lots")
+    public List<LotResponse> getCustomerLots(@PathVariable Integer customerID) {
+        return lotService.getCustomerLots(customerID);
     }
 
-    @PostMapping("/{id}/lots")
+    @PostMapping("/{customerID}/lots")
     @ResponseStatus(HttpStatus.CREATED)
     public LotResponse createLot(
-            @PathVariable int id,
+            @PathVariable Integer customerID,
             @Valid @RequestBody LotRequest request) {
-        return lotService.createLot(id, request);
+        return lotService.create(customerID, request);
     }
 
-    @PutMapping("/{customerId}/lots/{lotId}")
+    @PutMapping("/{customerID}/lots/{lotID}")
     public ResponseEntity<LotResponse> updateLot(
-            @PathVariable int lotId,
+            @PathVariable Integer lotID,
             @Valid @RequestBody LotRequest request) {
 
-        LotResponse response = lotService.updateLot(lotId, request);
+        LotResponse response = lotService.update(lotID, request);
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{customerId}/lots/{lotId}")
-    public ResponseEntity<Void> deleteLot(@PathVariable int lotId) {
-        lotService.deleteLot(lotId);
+    @DeleteMapping("/{customerID}/lots/{lotID}")
+    public ResponseEntity<Void> deleteLot(@PathVariable Integer lotID) {
+        lotService.delete(lotID);
         return ResponseEntity.noContent().build();
     }
 }

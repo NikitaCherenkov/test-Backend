@@ -2,11 +2,12 @@ package com.example.demo.service;
 
 import com.example.demo.dto.request.CustomerRequest;
 import com.example.demo.dto.response.CustomerResponse;
-import com.example.demo.enums.CustomerType;
 import com.example.demo.exceptions.CustomerCodeAlreadyExistException;
 import com.example.demo.exceptions.CustomerHasChildrenException;
 import com.example.demo.exceptions.CustomerHasLotsException;
 import com.example.demo.exceptions.CustomerNotFoundException;
+import com.example.demo.mapper.CustomerMapper;
+import com.example.demo.model.Customer;
 import com.example.demo.repositiory.CustomerRepository;
 import com.example.demo.repositiory.LotRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,32 +21,45 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CustomerService {
 
+    private final CustomerMapper customerMapper;
     private final CustomerRepository customerRepository;
     private final LotRepository lotRepository;
 
     public CustomerResponse createCustomer(CustomerRequest request) {
-        if (customerRepository.existsByCode(request.getCode())) {
-            throw new CustomerCodeAlreadyExistException("Customer with code " + request.getCode() + " already exists");
+        String customerCode = request.getCustomerCode();
+        if (customerCode != null && customerRepository.existsByCode(customerCode)) {
+            throw new CustomerCodeAlreadyExistException("Customer with code " + customerCode + " already exists");
         }
 
         checkMainCustomerCode(request);
 
-        return storeDataRequest(customerRepository.createNewRecord(), request);
+        Customer newCustomer = customerMapper.fromRequest(request);
+        Customer savedCustomer = customerRepository.create(newCustomer);
+        return customerMapper.toResponse(savedCustomer);
     }
 
-    public CustomerResponse getCustomerById(int id) {
-        return CustomerResponse.fromRecord(getCustomerRecord(id));
+    public CustomerResponse updateCustomer(Integer customerID, CustomerRequest request) {
+        CustomerRecord existingRecord = getCustomerRecord(customerID);
+
+        String oldCustomerCode = existingRecord.getCustomerCode();
+        String newCustomerCode = request.getCustomerCode();
+        if (!oldCustomerCode.equals(newCustomerCode)) {
+            if (customerRepository.existsByCode(newCustomerCode)) {
+                throw new CustomerCodeAlreadyExistException("Customer with code " + newCustomerCode + " already exists");
+            }
+            lotRepository.updateCustomerCode(oldCustomerCode, newCustomerCode);
+            customerRepository.updateMainCustomerCode(oldCustomerCode, newCustomerCode);
+        }
+
+        checkMainCustomerCode(request);
+
+        Customer customer = customerMapper.fromRequest(request);
+        Customer updatedCustomer = customerRepository.update(existingRecord, customer);
+        return customerMapper.toResponse(updatedCustomer);
     }
 
-    public List<CustomerResponse> getAllCustomers() {
-        return customerRepository.getAllCustomers()
-                .stream()
-                .map(CustomerResponse::fromRecord)
-                .collect(Collectors.toList());
-    }
-
-    public void deleteCustomer(int id) {
-        CustomerRecord record = getCustomerRecord(id);
+    public void deleteCustomer(Integer customerID) {
+        CustomerRecord record = getCustomerRecord(customerID);
 
         String customerCode = record.getCustomerCode();
         if (lotRepository.existsByCustomerCode(customerCode)) {
@@ -59,68 +73,34 @@ public class CustomerService {
             );
         }
 
-        customerRepository.deleteById(id);
+        customerRepository.delete(record);
     }
 
-    public CustomerResponse updateCustomer(int id, CustomerRequest request) {
-        CustomerRecord existingRecord = getCustomerRecord(id);
-
-        String oldCustomerCode = existingRecord.getCustomerCode();
-        String newCustomerCode = request.getCode();
-        if (!oldCustomerCode.equals(newCustomerCode)) {
-            if (customerRepository.existsByCode(request.getCode())) {
-                throw new CustomerCodeAlreadyExistException("Customer with code " + newCustomerCode + " already exists");
-            }
-
-            lotRepository.updateCustomerCode(oldCustomerCode, newCustomerCode);
-            customerRepository.updateMainCustomerCode(oldCustomerCode, newCustomerCode);
-        }
-
-        checkMainCustomerCode(request);
-
-        return storeDataRequest(existingRecord, request);
+    public CustomerResponse getCustomerById(Integer customerID) {
+        CustomerRecord record = getCustomerRecord(customerID);
+        return customerMapper.toResponse(customerMapper.fromRecord(record));
     }
 
-    private CustomerResponse storeDataRequest(CustomerRecord record, CustomerRequest request) {
-        return CustomerResponse.fromRecord(customerRepository.save(setValues(record, request)));
-    }
-
-    private CustomerRecord setValues(CustomerRecord targetRecord, CustomerRequest sourceRequest) {
-        targetRecord.setCustomerCode(sourceRequest.getCode());
-        targetRecord.setCustomerName(sourceRequest.getName());
-        targetRecord.setCustomerInn(sourceRequest.getInn());
-        targetRecord.setCustomerKpp(sourceRequest.getKpp());
-        targetRecord.setCustomerLegalAddress(sourceRequest.getLegalAddress());
-        targetRecord.setCustomerPostalAddress(sourceRequest.getPostalAddress());
-        targetRecord.setCustomerEmail(sourceRequest.getEmail());
-        targetRecord.setCustomerCodeMain(sourceRequest.getCodeMainCustomer());
-
-        switch (sourceRequest.getCustomerType()) {
-            case CustomerType.ORGANIZATION:
-                targetRecord.setIsOrganization(true);
-                targetRecord.setIsPerson(false);
-                break;
-            case CustomerType.PERSON:
-                targetRecord.setIsOrganization(false);
-                targetRecord.setIsPerson(true);
-                break;
-        }
-
-        return targetRecord;
+    public List<CustomerResponse> getAllCustomers() {
+        return customerRepository.getAllCustomers()
+                .stream()
+                .map(customer -> customerMapper.toResponse(customerMapper.fromRecord(customer)))
+                .collect(Collectors.toList());
     }
 
     private void checkMainCustomerCode(CustomerRequest request) {
-        if (request.getCodeMainCustomer() != null &&
-                !request.getCodeMainCustomer().trim().isEmpty() &&
-                !customerRepository.existsByCode(request.getCodeMainCustomer())) {
+        String codeMainCustomer = request.getCustomerCodeMain();
+        if (codeMainCustomer != null &&
+                !codeMainCustomer.trim().isEmpty() &&
+                !customerRepository.existsByCode(codeMainCustomer)) {
             throw new IllegalArgumentException(
-                    "Main customer with code " + request.getCodeMainCustomer() + " does not exist"
+                    "Main customer with code " + codeMainCustomer + " does not exist"
             );
         }
     }
 
-    private CustomerRecord getCustomerRecord(int customerId) {
-        return customerRepository.findById(customerId)
-                .orElseThrow(() -> new CustomerNotFoundException("Customer not found with id: " + customerId));
+    private CustomerRecord getCustomerRecord(Integer customerID) {
+        return customerRepository.findByID(customerID)
+                .orElseThrow(() -> new CustomerNotFoundException("Customer not found with id: " + customerID));
     }
 }

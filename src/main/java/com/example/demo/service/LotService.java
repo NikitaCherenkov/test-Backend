@@ -4,6 +4,8 @@ import com.example.demo.dto.request.LotRequest;
 import com.example.demo.dto.response.LotResponse;
 import com.example.demo.exceptions.CustomerNotFoundException;
 import com.example.demo.exceptions.LotNotFoundException;
+import com.example.demo.mapper.LotMapper;
+import com.example.demo.model.Lot;
 import com.example.demo.repositiory.CustomerRepository;
 import com.example.demo.repositiory.LotRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,20 +20,51 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LotService {
 
+    private final LotMapper lotMapper;
     private final CustomerRepository customerRepository;
     private final LotRepository lotRepository;
 
-    public List<LotResponse> getCustomerLots(int id) {
-        if (!customerRepository.existsById(id)) {
-            throw new CustomerNotFoundException("Customer not found with id: " + id);
+    public LotResponse create(Integer customerID, LotRequest request) {
+        CustomerRecord customerRecord = customerRepository.findByID(customerID)
+                .orElseThrow(() -> new CustomerNotFoundException("Customer not found with id: " + customerID));
+
+        request.setCustomerCode(customerRecord.getCustomerCode());
+        return create(request);
+    }
+
+    public LotResponse create(LotRequest request) {
+        if (request.getCustomerCode().trim().isEmpty()) {
+            throw new CustomerNotFoundException("Customer code is required");
         }
 
-        List<LotRecord> records = lotRepository.findByCustomerCode(getCustomerRecord(id).getCustomerCode());
+        String customerCode = request.getCustomerCode();
+        if (!customerRepository.existsByCode(customerCode)) {
+            throw new CustomerNotFoundException("Customer not found with code: " + customerCode);
+        }
 
-        return records
-                .stream()
-                .map(LotResponse::fromRecord)
-                .collect(Collectors.toList());
+        Lot newLot = lotMapper.fromRequest(request);
+        Lot savedLot = lotRepository.create(newLot);
+        return lotMapper.toResponse(savedLot);
+    }
+
+    public LotResponse update(Integer lotID, LotRequest request) {
+        LotRecord existingRecord = getLotRecord(lotID);
+
+        if (request.getCustomerCode().trim().isEmpty()) {
+            throw new CustomerNotFoundException("Customer code is required");
+        }
+
+        Lot lot = lotMapper.fromRequest(request);
+        Lot updatedLot = lotRepository.update(existingRecord, lot);
+        return lotMapper.toResponse(updatedLot);
+    }
+
+    public void delete(Integer lotID) {
+        lotRepository.delete(getLotRecord(lotID));
+    }
+
+    public LotResponse getLotByID(Integer lotID) {
+        return lotMapper.toResponse(lotMapper.fromRecord(getLotRecord(lotID)));
     }
 
     public List<LotResponse> getAllLots() {
@@ -39,63 +72,30 @@ public class LotService {
 
         return records
                 .stream()
-                .map(LotResponse::fromRecord)
+                .map(lot -> lotMapper.toResponse(lotMapper.fromRecord(lot)))
                 .collect(Collectors.toList());
     }
 
-    public LotResponse getLotById(int id) {
-        return LotResponse.fromRecord(getLotRecord(id));
-    }
-
-    public LotResponse createLot(LotRequest request) {
-        if (request.getCustomerCode() == null) {
-            throw new CustomerNotFoundException("Customer code is required");
+    public List<LotResponse> getCustomerLots(Integer customerID) {
+        if (!customerRepository.existsById(customerID)) {
+            throw new CustomerNotFoundException("Customer not found with id: " + customerID);
         }
 
-        String customerCode = request.getCustomerCode();
-        CustomerRecord customerRecord = customerRepository.findByCode(customerCode)
-                .orElseThrow(() -> new CustomerNotFoundException("Customer not found with code: " + customerCode));
+        List<LotRecord> records = lotRepository.findByCustomerCode(getCustomerRecord(customerID).getCustomerCode());
 
-        return createLot(customerRecord.getId(), request);
+        return records
+                .stream()
+                .map(lot -> lotMapper.toResponse(lotMapper.fromRecord(lot)))
+                .collect(Collectors.toList());
     }
 
-    public LotResponse createLot(int customerId, LotRequest request) {
-        if (request.getCustomerCode() == null) request.setCustomerCode(getCustomerRecord(customerId).getCustomerCode());
-
-        return storeDataRequest(lotRepository.createNewRecord(), request);
+    private LotRecord getLotRecord(Integer lotID) {
+        return lotRepository.findByID(lotID)
+                .orElseThrow(() -> new LotNotFoundException("Customer not found with id: " + lotID));
     }
 
-    public LotResponse updateLot(int lotId, LotRequest request) {
-        return storeDataRequest(getLotRecord(lotId), request);
-    }
-
-    public void deleteLot(int lotId) {
-        lotRepository.deleteById(lotId);
-    }
-
-    private LotResponse storeDataRequest(LotRecord record, LotRequest request) {
-        return LotResponse.fromRecord(lotRepository.save(setValues(record, request)));
-    }
-
-    private CustomerRecord getCustomerRecord(int customerId) {
-        return customerRepository.findById(customerId)
+    private CustomerRecord getCustomerRecord(Integer customerId) {
+        return customerRepository.findByID(customerId)
                 .orElseThrow(() -> new CustomerNotFoundException("Customer not found with id: " + customerId));
-    }
-
-    private LotRecord getLotRecord(int lotId) {
-        return lotRepository.findById(lotId)
-                .orElseThrow(() -> new LotNotFoundException("Lot not found with id: " + lotId));
-    }
-
-    private LotRecord setValues(LotRecord targetRecord, LotRequest sourceRequest) {
-        targetRecord.setLotName(sourceRequest.getName());
-        targetRecord.setCustomerCode(sourceRequest.getCustomerCode());
-        targetRecord.setPrice(sourceRequest.getPrice());
-        targetRecord.setCurrencyCode(sourceRequest.getCurrencyCode().getDisplayName());
-        targetRecord.setNdsRate(sourceRequest.getNdsRate().getDisplayName());
-        targetRecord.setPlaceDelivery(sourceRequest.getPlaceDelivery());
-        targetRecord.setDateDelivery(sourceRequest.getDateDelivery().atStartOfDay());
-
-        return targetRecord;
     }
 }

@@ -22,27 +22,27 @@ import lombok.NoArgsConstructor;
 public class CustomerRequest {
 
     @NotBlank(message = "Code is required")
-    private String code;
+    private String customerCode;
 
     @NotBlank(message = "Name is required")
-    private String name;
+    private String customerName;
 
     @NotBlank(message = "INN is required")
     @Pattern(regexp = "^\\d{10}$|^\\d{12}$", message = "INN must be 10 or 12 digits")
-    private String inn;
+    private String customerInn;
 
     @Pattern(regexp = "^\\d{9}$", message = "KPP must be 9 digits")
-    private String kpp;
+    private String customerKpp;
 
-    private String legalAddress;
+    private String customerLegalAddress;
 
-    private String postalAddress;
+    private String customerPostalAddress;
 
     @Email(message = "Invalid email")
-    private String email;
+    private String customerEmail;
 
     @ExistingCustomerCode
-    private String codeMainCustomer;
+    private String customerCodeMain;
 
     @NotNull(message = "Customer type is required")
     private CustomerType customerType;

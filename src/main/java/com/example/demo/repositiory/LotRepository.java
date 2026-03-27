@@ -1,5 +1,7 @@
 package com.example.demo.repositiory;
 
+import com.example.demo.mapper.LotMapper;
+import com.example.demo.model.Lot;
 import lombok.RequiredArgsConstructor;
 import nu.studer.sample.tables.records.LotRecord;
 import org.jooq.DSLContext;
@@ -15,12 +17,37 @@ import static nu.studer.sample.Tables.LOT;
 @RequiredArgsConstructor
 public class LotRepository {
 
+    private final LotMapper lotMapper;
     private final DSLContext dsl;
 
-    public Optional<LotRecord> findById(int id) {
+    public Lot create(Lot lot) {
+        LotRecord newRecord = dsl.newRecord(LOT);
+        lotMapper.toRecord(lot, newRecord);
+        newRecord.store();
+        return lotMapper.fromRecord(newRecord);
+    }
+
+    public Lot update(LotRecord record, Lot lot) {
+        lotMapper.toRecord(lot, record);
+        record.update();
+        return lotMapper.fromRecord(record);
+    }
+
+    public int delete(LotRecord record) {
+        return record.delete();
+    }
+
+    public int updateCustomerCode(String oldCustomerCode, String newCustomerCode) {
+        return dsl.update(LOT)
+                .set(LOT.CUSTOMER_CODE, newCustomerCode)
+                .where(LOT.CUSTOMER_CODE.eq(oldCustomerCode))
+                .execute();
+    }
+
+    public Optional<LotRecord> findByID(Integer lotID) {
         return Optional.ofNullable(
                 dsl.selectFrom(LOT)
-                        .where(LOT.ID.eq(id))
+                        .where(LOT.ID.eq(lotID))
                         .fetchOne()
         );
     }
@@ -42,27 +69,5 @@ public class LotRepository {
         return dsl.selectFrom(LOT)
                 .fetch()
                 .collect(Collectors.toList());
-    }
-
-    public LotRecord createNewRecord() {
-        return dsl.newRecord(LOT);
-    }
-
-    public LotRecord save(LotRecord record) {
-        record.store();
-        return record;
-    }
-
-    public int deleteById(int id) {
-        return dsl.deleteFrom(LOT)
-                .where(LOT.ID.eq(id))
-                .execute();
-    }
-
-    public int updateCustomerCode(String oldCustomerCode, String newCustomerCode) {
-        return dsl.update(LOT)
-                .set(LOT.CUSTOMER_CODE, newCustomerCode)
-                .where(LOT.CUSTOMER_CODE.eq(oldCustomerCode))
-                .execute();
     }
 }

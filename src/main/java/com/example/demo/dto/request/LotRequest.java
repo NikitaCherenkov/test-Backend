@@ -1,7 +1,6 @@
 package com.example.demo.dto.request;
 
 import com.example.demo.enums.Currency;
-import com.example.demo.enums.Nds;
 import com.example.demo.validation.ExistingCustomerCode;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
@@ -19,7 +18,7 @@ import java.time.LocalDate;
 public class LotRequest {
 
     @NotBlank(message = "Name is required")
-    private String name;
+    private String lotName;
 
     @ExistingCustomerCode
     private String customerCode;
@@ -31,7 +30,7 @@ public class LotRequest {
     private Currency currencyCode;
 
     @NotNull(message = "NDS is required")
-    private Nds ndsRate;
+    private String ndsRate;
 
     @NotBlank(message = "Delivery place is required")
     private String placeDelivery;
