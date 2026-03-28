@@ -2,8 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.request.LotRequest;
 import com.example.demo.dto.response.LotResponse;
-import com.example.demo.exceptions.CustomerNotFoundException;
-import com.example.demo.exceptions.LotNotFoundException;
+import com.example.demo.exceptions.ServiceException;
 import com.example.demo.mapper.LotMapper;
 import com.example.demo.model.Lot;
 import com.example.demo.repositiory.CustomerRepository;
@@ -26,7 +25,7 @@ public class LotService {
 
     public LotResponse create(Integer customerID, LotRequest request) {
         CustomerRecord customerRecord = customerRepository.findByID(customerID)
-                .orElseThrow(() -> new CustomerNotFoundException("Customer not found with id: " + customerID));
+                .orElseThrow(() -> new ServiceException("Customer not found with id: " + customerID));
 
         request.setCustomerCode(customerRecord.getCustomerCode());
         return create(request);
@@ -34,12 +33,12 @@ public class LotService {
 
     public LotResponse create(LotRequest request) {
         if (request.getCustomerCode().trim().isEmpty()) {
-            throw new CustomerNotFoundException("Customer code is required");
+            throw new ServiceException("Customer code is required");
         }
 
         String customerCode = request.getCustomerCode();
         if (!customerRepository.existsByCode(customerCode)) {
-            throw new CustomerNotFoundException("Customer not found with code: " + customerCode);
+            throw new ServiceException("Customer not found with code: " + customerCode);
         }
 
         Lot newLot = lotMapper.fromRequest(request);
@@ -51,7 +50,7 @@ public class LotService {
         LotRecord existingRecord = getLotRecord(lotID);
 
         if (request.getCustomerCode().trim().isEmpty()) {
-            throw new CustomerNotFoundException("Customer code is required");
+            throw new ServiceException("Customer code is required");
         }
 
         Lot lot = lotMapper.fromRequest(request);
@@ -78,7 +77,7 @@ public class LotService {
 
     public List<LotResponse> getCustomerLots(Integer customerID) {
         if (!customerRepository.existsById(customerID)) {
-            throw new CustomerNotFoundException("Customer not found with id: " + customerID);
+            throw new ServiceException("Customer not found with id: " + customerID);
         }
 
         List<LotRecord> records = lotRepository.findByCustomerCode(getCustomerRecord(customerID).getCustomerCode());
@@ -91,11 +90,11 @@ public class LotService {
 
     private LotRecord getLotRecord(Integer lotID) {
         return lotRepository.findByID(lotID)
-                .orElseThrow(() -> new LotNotFoundException("Customer not found with id: " + lotID));
+                .orElseThrow(() -> new ServiceException("Customer not found with id: " + lotID));
     }
 
     private CustomerRecord getCustomerRecord(Integer customerId) {
         return customerRepository.findByID(customerId)
-                .orElseThrow(() -> new CustomerNotFoundException("Customer not found with id: " + customerId));
+                .orElseThrow(() -> new ServiceException("Customer not found with id: " + customerId));
     }
 }

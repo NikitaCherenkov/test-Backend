@@ -2,10 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.request.CustomerRequest;
 import com.example.demo.dto.response.CustomerResponse;
-import com.example.demo.exceptions.CustomerCodeAlreadyExistException;
-import com.example.demo.exceptions.CustomerHasChildrenException;
-import com.example.demo.exceptions.CustomerHasLotsException;
-import com.example.demo.exceptions.CustomerNotFoundException;
+import com.example.demo.exceptions.ServiceException;
 import com.example.demo.mapper.CustomerMapper;
 import com.example.demo.model.Customer;
 import com.example.demo.repositiory.CustomerRepository;
@@ -28,7 +25,7 @@ public class CustomerService {
     public CustomerResponse createCustomer(CustomerRequest request) {
         String customerCode = request.getCustomerCode();
         if (customerCode != null && customerRepository.existsByCode(customerCode)) {
-            throw new CustomerCodeAlreadyExistException("Customer with code " + customerCode + " already exists");
+            throw new ServiceException("Customer with code " + customerCode + " already exists");
         }
 
         checkMainCustomerCode(request);
@@ -45,7 +42,7 @@ public class CustomerService {
         String newCustomerCode = request.getCustomerCode();
         if (!oldCustomerCode.equals(newCustomerCode)) {
             if (customerRepository.existsByCode(newCustomerCode)) {
-                throw new CustomerCodeAlreadyExistException("Customer with code " + newCustomerCode + " already exists");
+                throw new ServiceException("Customer with code " + newCustomerCode + " already exists");
             }
             lotRepository.updateCustomerCode(oldCustomerCode, newCustomerCode);
             customerRepository.updateMainCustomerCode(oldCustomerCode, newCustomerCode);
@@ -63,12 +60,12 @@ public class CustomerService {
 
         String customerCode = record.getCustomerCode();
         if (lotRepository.existsByCustomerCode(customerCode)) {
-            throw new CustomerHasLotsException(
+            throw new ServiceException(
                     "Cannot delete customer with code " + customerCode + " because they have associated lots"
             );
         }
         if (customerRepository.existsByCodeMain(customerCode)) {
-            throw new CustomerHasChildrenException(
+            throw new ServiceException(
                     "Cannot delete customer with code " + customerCode + " because they have child customer(s)"
             );
         }
@@ -101,6 +98,6 @@ public class CustomerService {
 
     private CustomerRecord getCustomerRecord(Integer customerID) {
         return customerRepository.findByID(customerID)
-                .orElseThrow(() -> new CustomerNotFoundException("Customer not found with id: " + customerID));
+                .orElseThrow(() -> new ServiceException("Customer not found with id: " + customerID));
     }
 }

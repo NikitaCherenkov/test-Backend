@@ -20,66 +20,14 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(CustomerCodeAlreadyExistException.class)
-    public ResponseEntity<Map<String, Object>> handleCustomerCodeAlreadyExists(
-            CustomerCodeAlreadyExistException ex) {
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("timestamp", LocalDateTime.now());
-        response.put("status", HttpStatus.CONFLICT.value());
-        response.put("error", "Conflict");
-        response.put("message", ex.getMessage());
-        response.put("field", "code");
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    @ExceptionHandler(ServiceException.class)
+    public ResponseEntity<Map<String, Object>> handleServiceException(ServiceException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage());
     }
 
-    @ExceptionHandler(CustomerNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleCustomerNotFound(CustomerNotFoundException ex) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(Map.of(
-                        "timestamp", LocalDateTime.now(),
-                        "status", 404,
-                        "error", "Not Found",
-                        "message", ex.getMessage()
-                ));
-    }
-
-    @ExceptionHandler(LotNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleLotNotFound(LotNotFoundException ex) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(Map.of(
-                        "timestamp", LocalDateTime.now(),
-                        "status", 404,
-                        "error", "Not Found",
-                        "message", ex.getMessage()
-                ));
-    }
-
-    @ExceptionHandler(CustomerHasLotsException.class)
-    public ResponseEntity<Map<String, Object>> handleCustomerHasLots(CustomerHasLotsException ex) {
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(Map.of(
-                        "timestamp", LocalDateTime.now(),
-                        "status", 409,
-                        "error", "Conflict",
-                        "message", ex.getMessage()
-                ));
-    }
-
-    @ExceptionHandler(CustomerHasChildrenException.class)
-    public ResponseEntity<Map<String, Object>> handleCustomerHasLots(CustomerHasChildrenException ex) {
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(Map.of(
-                        "timestamp", LocalDateTime.now(),
-                        "status", 409,
-                        "error", "Conflict",
-                        "message", ex.getMessage()
-                ));
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
+        return buildResponse(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -93,13 +41,7 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("timestamp", LocalDateTime.now());
-        response.put("status", HttpStatus.BAD_REQUEST.value());
-        response.put("error", "Validation Failed");
-        response.put("errors", errors);
-
-        return ResponseEntity.badRequest().body(response);
+        return buildResponse(HttpStatus.BAD_REQUEST, "Bad Request", "Validation Failed", errors);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -139,17 +81,7 @@ public class GlobalExceptionHandler {
             }
         }
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("timestamp", LocalDateTime.now());
-        response.put("status", HttpStatus.BAD_REQUEST.value());
-        response.put("error", "Validation Failed");
-        response.put("message", message);
-
-        if (!errors.isEmpty()) {
-            response.put("errors", errors);
-        }
-
-        return ResponseEntity.badRequest().body(response);
+        return buildResponse(HttpStatus.BAD_REQUEST, "Bad Request", message, errors);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -172,13 +104,7 @@ public class GlobalExceptionHandler {
         Map<String, String> errors = new HashMap<>();
         errors.put(fieldName, message);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("timestamp", LocalDateTime.now());
-        response.put("status", HttpStatus.BAD_REQUEST.value());
-        response.put("error", "Validation Failed");
-        response.put("errors", errors);
-
-        return ResponseEntity.badRequest().body(response);
+        return buildResponse(HttpStatus.BAD_REQUEST, "Bad Request", message, errors);
     }
 
     private String getExpectedFormat(Class<?> type) {
@@ -190,5 +116,30 @@ public class GlobalExceptionHandler {
             return "HH:mm:ss (e.g., 15:30:00)";
         }
         return "ISO date format";
+    }
+
+    private ResponseEntity<Map<String, Object>> buildResponse(
+            HttpStatus status,
+            String error,
+            String message
+    ) {
+        return buildResponse(status, error, message, null);
+    }
+
+    private ResponseEntity<Map<String, Object>> buildResponse(
+            HttpStatus status,
+            String error,
+            String message,
+            Map<String, String> errors
+    ) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", status.value());
+        response.put("error", error);
+        response.put("message", message);
+        if (errors != null && !errors.isEmpty()) {
+            response.put("errors", errors);
+        }
+        return ResponseEntity.status(status).body(response);
     }
 }
