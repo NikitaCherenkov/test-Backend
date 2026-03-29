@@ -12,7 +12,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class CustomerResponse {
 
-    private int id;
+    private Long id;
 
     private String customerCode;
 

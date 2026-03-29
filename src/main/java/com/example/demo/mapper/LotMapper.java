@@ -5,6 +5,7 @@ import com.example.demo.dto.response.LotResponse;
 import com.example.demo.enums.Currency;
 import com.example.demo.enums.Nds;
 import com.example.demo.model.Lot;
+import nu.studer.sample.enums.NdsRateType;
 import nu.studer.sample.tables.records.LotRecord;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -19,10 +20,10 @@ public interface LotMapper {
     Lot fromRequest(LotRequest request);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "ndsRate", source = "ndsRate", qualifiedByName = "ndsToString")
+    @Mapping(target = "ndsRate", source = "ndsRate", qualifiedByName = "ndsToNdsRateType")
     void toRecord(Lot lot, @MappingTarget LotRecord record);
 
-    @Mapping(target = "ndsRate", source = "ndsRate", qualifiedByName = "stringToNds")
+    @Mapping(target = "ndsRate", source = "ndsRate", qualifiedByName = "ndsRateTypeToNds")
     Lot fromRecord(LotRecord record);
 
     @Mapping(target = "ndsRate", source = "ndsRate", qualifiedByName = "ndsToString")
@@ -42,6 +43,28 @@ public interface LotMapper {
         }
 
         throw new IllegalArgumentException("Unknown NDS value: " + value);
+    }
+
+    @Named("ndsToNdsRateType")
+    default NdsRateType mapNdsRateType(Nds nds) {
+        for (NdsRateType ndsRateType : NdsRateType.values()) {
+            if (nds.getDisplayName().equals(ndsRateType.getLiteral())) {
+                return ndsRateType;
+            }
+        }
+
+        throw new IllegalArgumentException("Unknown NDS value: " + nds.getDisplayName());
+    }
+
+    @Named("ndsRateTypeToNds")
+    default Nds mapNds(NdsRateType ndsRateType) {
+        for (Nds nds : Nds.values()) {
+            if (nds.getDisplayName().equals(ndsRateType.getLiteral())) {
+                return nds;
+            }
+        }
+
+        throw new IllegalArgumentException("Unknown NDS value: " + ndsRateType.getLiteral());
     }
 
     @Named("currencyToString")

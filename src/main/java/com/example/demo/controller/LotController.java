@@ -25,7 +25,7 @@ public class LotController {
     }
 
     @GetMapping("/{lotID}")
-    public LotResponse getLot(@PathVariable Integer lotID) {
+    public LotResponse getLot(@PathVariable Long lotID) {
         return lotService.getLotByID(lotID);
     }
 
@@ -37,7 +37,7 @@ public class LotController {
 
     @PutMapping("/{lotID}")
     public ResponseEntity<LotResponse> updateLot(
-            @PathVariable Integer lotID,
+            @PathVariable Long lotID,
             @Valid @RequestBody LotRequest request) {
 
         LotResponse response = lotService.update(lotID, request);
@@ -45,7 +45,7 @@ public class LotController {
     }
 
     @DeleteMapping("/{lotID}")
-    public ResponseEntity<Void> deleteLot(@PathVariable Integer lotID) {
+    public ResponseEntity<Void> deleteLot(@PathVariable Long lotID) {
         lotService.delete(lotID);
         return ResponseEntity.noContent().build();
     }

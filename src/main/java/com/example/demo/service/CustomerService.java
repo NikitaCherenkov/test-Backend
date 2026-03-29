@@ -35,7 +35,7 @@ public class CustomerService {
         return customerMapper.toResponse(savedCustomer);
     }
 
-    public CustomerResponse updateCustomer(Integer customerID, CustomerRequest request) {
+    public CustomerResponse updateCustomer(Long customerID, CustomerRequest request) {
         CustomerRecord existingRecord = getCustomerRecord(customerID);
 
         String oldCustomerCode = existingRecord.getCustomerCode();
@@ -55,7 +55,7 @@ public class CustomerService {
         return customerMapper.toResponse(updatedCustomer);
     }
 
-    public void deleteCustomer(Integer customerID) {
+    public void deleteCustomer(Long customerID) {
         CustomerRecord record = getCustomerRecord(customerID);
 
         String customerCode = record.getCustomerCode();
@@ -73,7 +73,7 @@ public class CustomerService {
         customerRepository.delete(record);
     }
 
-    public CustomerResponse getCustomerById(Integer customerID) {
+    public CustomerResponse getCustomerById(Long customerID) {
         CustomerRecord record = getCustomerRecord(customerID);
         return customerMapper.toResponse(customerMapper.fromRecord(record));
     }
@@ -96,7 +96,7 @@ public class CustomerService {
         }
     }
 
-    private CustomerRecord getCustomerRecord(Integer customerID) {
+    private CustomerRecord getCustomerRecord(Long customerID) {
         return customerRepository.findByID(customerID)
                 .orElseThrow(() -> new ServiceException("Customer not found with id: " + customerID));
     }

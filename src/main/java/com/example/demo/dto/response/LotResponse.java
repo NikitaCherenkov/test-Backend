@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class LotResponse {
 
-    private int id;
+    private Long id;
 
     private String lotName;
 

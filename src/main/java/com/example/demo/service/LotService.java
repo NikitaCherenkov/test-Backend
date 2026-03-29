@@ -23,7 +23,7 @@ public class LotService {
     private final CustomerRepository customerRepository;
     private final LotRepository lotRepository;
 
-    public LotResponse create(Integer customerID, LotRequest request) {
+    public LotResponse create(Long customerID, LotRequest request) {
         CustomerRecord customerRecord = customerRepository.findByID(customerID)
                 .orElseThrow(() -> new ServiceException("Customer not found with id: " + customerID));
 
@@ -46,7 +46,7 @@ public class LotService {
         return lotMapper.toResponse(savedLot);
     }
 
-    public LotResponse update(Integer lotID, LotRequest request) {
+    public LotResponse update(Long lotID, LotRequest request) {
         LotRecord existingRecord = getLotRecord(lotID);
 
         if (request.getCustomerCode().trim().isEmpty()) {
@@ -58,11 +58,11 @@ public class LotService {
         return lotMapper.toResponse(updatedLot);
     }
 
-    public void delete(Integer lotID) {
+    public void delete(Long lotID) {
         lotRepository.delete(getLotRecord(lotID));
     }
 
-    public LotResponse getLotByID(Integer lotID) {
+    public LotResponse getLotByID(Long lotID) {
         return lotMapper.toResponse(lotMapper.fromRecord(getLotRecord(lotID)));
     }
 
@@ -75,7 +75,7 @@ public class LotService {
                 .collect(Collectors.toList());
     }
 
-    public List<LotResponse> getCustomerLots(Integer customerID) {
+    public List<LotResponse> getCustomerLots(Long customerID) {
         if (!customerRepository.existsById(customerID)) {
             throw new ServiceException("Customer not found with id: " + customerID);
         }
@@ -88,12 +88,12 @@ public class LotService {
                 .collect(Collectors.toList());
     }
 
-    private LotRecord getLotRecord(Integer lotID) {
+    private LotRecord getLotRecord(Long lotID) {
         return lotRepository.findByID(lotID)
                 .orElseThrow(() -> new ServiceException("Customer not found with id: " + lotID));
     }
 
-    private CustomerRecord getCustomerRecord(Integer customerId) {
+    private CustomerRecord getCustomerRecord(Long customerId) {
         return customerRepository.findByID(customerId)
                 .orElseThrow(() -> new ServiceException("Customer not found with id: " + customerId));
     }

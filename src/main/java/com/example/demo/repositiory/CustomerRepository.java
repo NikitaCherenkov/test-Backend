@@ -41,7 +41,7 @@ public class CustomerRepository {
         return record.delete();
     }
 
-    public Optional<CustomerRecord> findByID(Integer customerID) {
+    public Optional<CustomerRecord> findByID(Long customerID) {
         return Optional.ofNullable(
                 dsl.selectFrom(CUSTOMER)
                         .where(CUSTOMER.ID.eq(customerID))
@@ -71,7 +71,7 @@ public class CustomerRepository {
         );
     }
 
-    public boolean existsById(Integer customerID) {
+    public boolean existsById(Long customerID) {
         return dsl.fetchExists(
                 dsl.selectFrom(CUSTOMER)
                         .where(CUSTOMER.ID.eq(customerID))

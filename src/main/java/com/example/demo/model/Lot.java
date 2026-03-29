@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class Lot {
 
-    private Integer id;
+    private Long id;
     private String lotName;
     private String customerCode;
     private BigDecimal price;

@@ -28,7 +28,7 @@ public class CustomerController {
     }
 
     @GetMapping("/{customerID}")
-    public CustomerResponse getCustomer(@PathVariable Integer customerID) {
+    public CustomerResponse getCustomer(@PathVariable Long customerID) {
         return customerService.getCustomerById(customerID);
     }
 
@@ -40,7 +40,7 @@ public class CustomerController {
 
     @PutMapping("/{customerID}")
     public ResponseEntity<CustomerResponse> updateCustomer(
-            @PathVariable Integer customerID,
+            @PathVariable Long customerID,
             @Valid @RequestBody CustomerRequest request) {
 
         CustomerResponse response = customerService.updateCustomer(customerID, request);
@@ -48,27 +48,27 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{customerID}")
-    public ResponseEntity<Void> deleteCustomer(@PathVariable Integer customerID) {
+    public ResponseEntity<Void> deleteCustomer(@PathVariable Long customerID) {
         customerService.deleteCustomer(customerID);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{customerID}/lots")
-    public List<LotResponse> getCustomerLots(@PathVariable Integer customerID) {
+    public List<LotResponse> getCustomerLots(@PathVariable Long customerID) {
         return lotService.getCustomerLots(customerID);
     }
 
     @PostMapping("/{customerID}/lots")
     @ResponseStatus(HttpStatus.CREATED)
     public LotResponse createLot(
-            @PathVariable Integer customerID,
+            @PathVariable Long customerID,
             @Valid @RequestBody LotRequest request) {
         return lotService.create(customerID, request);
     }
 
     @PutMapping("/{customerID}/lots/{lotID}")
     public ResponseEntity<LotResponse> updateLot(
-            @PathVariable Integer lotID,
+            @PathVariable Long lotID,
             @Valid @RequestBody LotRequest request) {
 
         LotResponse response = lotService.update(lotID, request);
@@ -76,7 +76,7 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{customerID}/lots/{lotID}")
-    public ResponseEntity<Void> deleteLot(@PathVariable Integer lotID) {
+    public ResponseEntity<Void> deleteLot(@PathVariable Long lotID) {
         lotService.delete(lotID);
         return ResponseEntity.noContent().build();
     }

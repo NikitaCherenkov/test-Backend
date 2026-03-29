@@ -44,7 +44,7 @@ public class LotRepository {
                 .execute();
     }
 
-    public Optional<LotRecord> findByID(Integer lotID) {
+    public Optional<LotRecord> findByID(Long lotID) {
         return Optional.ofNullable(
                 dsl.selectFrom(LOT)
                         .where(LOT.ID.eq(lotID))
