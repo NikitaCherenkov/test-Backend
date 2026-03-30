@@ -1,6 +1,5 @@
 package com.example.demo.dto.request;
 
-import com.example.demo.enums.Currency;
 import com.example.demo.validation.ExistingCustomerCode;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
@@ -26,10 +25,10 @@ public class LotRequest {
     @NotNull(message = "Price is required")
     private BigDecimal price;
 
-    @NotNull(message = "Currency is required")
-    private Currency currencyCode;
+    @NotBlank(message = "Currency is required")
+    private String currencyCode;
 
-    @NotNull(message = "NDS is required")
+    @NotBlank(message = "NDS is required")
     private String ndsRate;
 
     @NotBlank(message = "Delivery place is required")

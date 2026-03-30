@@ -1,7 +1,5 @@
 package com.example.demo.model;
 
-import com.example.demo.enums.Currency;
-import com.example.demo.enums.Nds;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -18,8 +16,8 @@ public class Lot {
     private String lotName;
     private String customerCode;
     private BigDecimal price;
-    private Currency currencyCode;
-    private Nds ndsRate;
+    private String currencyCode;
+    private String ndsRate;
     private String placeDelivery;
     private LocalDate dateDelivery;
 }
