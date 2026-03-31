@@ -49,11 +49,14 @@ public class LotService {
     public LotResponse update(Long lotID, LotRequest request) {
         LotRecord existingRecord = getLotRecord(lotID);
 
-        if (request.getCustomerCode().trim().isEmpty()) {
-            throw new ServiceException("Customer code is required");
-        }
+        String oldCustomerCode = existingRecord.getCustomerCode();
 
         Lot lot = lotMapper.fromRequest(request);
+
+        if (lot.getCustomerCode() == null || lot.getCustomerCode().trim().isEmpty()) {
+            lot.setCustomerCode(oldCustomerCode);
+        }
+
         Lot updatedLot = lotRepository.update(existingRecord, lot);
         return lotMapper.toResponse(updatedLot);
     }
@@ -90,7 +93,7 @@ public class LotService {
 
     private LotRecord getLotRecord(Long lotID) {
         return lotRepository.findByID(lotID)
-                .orElseThrow(() -> new ServiceException("Customer not found with id: " + lotID));
+                .orElseThrow(() -> new ServiceException("Lot not found with id: " + lotID));
     }
 
     private CustomerRecord getCustomerRecord(Long customerId) {
